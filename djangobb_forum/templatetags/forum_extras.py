@@ -4,29 +4,32 @@ from __future__ import unicode_literals
 import hashlib
 
 from django import template
-from django.core.urlresolvers import reverse
-from django.core.cache import cache
-from django.utils.safestring import mark_safe
-from django.utils.encoding import smart_text
 from django.conf import settings
-from django.utils.html import escape
-from django.utils import timezone
 from django.contrib.humanize.templatetags.humanize import naturalday
-from django.utils.six.moves.urllib.parse import urlencode
+from django.core.cache import cache
+from django.core.urlresolvers import reverse
+from django.utils import timezone
+from django.utils.encoding import smart_text
+from django.utils.html import escape
+from django.utils.http import urlencode
+from django.utils.safestring import mark_safe
 
-from djangobb_forum.models import Report
 from djangobb_forum import settings as forum_settings
-
+from djangobb_forum.models import Report
 
 register = template.Library()
+
 
 # TODO:
 # * rename all tags with forum_ prefix
 
 @register.filter
 def profile_link(user):
-    data = '<a href="%s">%s</a>' % (\
-        reverse('djangobb:forum_profile', args=[user.username]), user.username)
+    uname = user.username if user else "NULL"
+    data = '<a href="{hrefVal}">{uname}</a>'.format(
+        hrefVal=reverse('djangobb:forum_profile', args=[uname]),
+        uname=uname
+    )
     return mark_safe(data)
 
 
@@ -46,7 +49,7 @@ class ForumTimeNode(template.Node):
 
     def render(self, context):
         time = timezone.localtime(self.time.resolve(context))
-        formatted_time = '%s %s' % (naturalday(time), time.strftime('%H:%M:%S'))
+        formatted_time = "{ndTime} {strTime}".format(ndTime=naturalday(time), strTime=time.strftime("%H:%M:%S"))
         formatted_time = mark_safe(formatted_time)
         return formatted_time
 
@@ -70,7 +73,8 @@ def lofi_link(object, anchor=''):
 
     url = hasattr(object, 'get_absolute_url') and object.get_absolute_url() or None
     anchor = anchor or smart_text(object)
-    return mark_safe('<a href="%slofi/">%s</a>' % (url, escape(anchor)))
+    url_string = '<a href="{hrefVal}lofi/">{anchorVal}</a>'.format(hrefVal=url, anchorVal=escape(anchor))
+    return mark_safe(s=url_string)
 
 
 @register.filter
@@ -78,10 +82,10 @@ def has_unreads(topic, user):
     """
     Check if topic has messages which user didn't read.
     """
-    if not user.is_authenticated() or\
-        (user.posttracking.last_read is not None and\
-         user.posttracking.last_read > topic.updated):
-            return False
+    if not user.is_authenticated() or \
+            (user.posttracking.last_read is not None and \
+             user.posttracking.last_read > topic.updated):
+        return False
     else:
         if isinstance(user.posttracking.topics, dict):
             if topic.last_post_id > user.posttracking.topics.get(str(topic.id), 0):
@@ -89,6 +93,7 @@ def has_unreads(topic, user):
             else:
                 return False
         return True
+
 
 @register.filter
 def forum_unreads(forum, user):
@@ -181,6 +186,7 @@ def forum_authority(user):
 def online(user):
     return cache.get('djangobb_user%d' % user.id)
 
+
 @register.filter
 def attachment_link(attach):
     from django.template.defaultfilters import filesizeformat
@@ -194,7 +200,8 @@ def attachment_link(attach):
         img = '<img src="%sdjangobb_forum/img/attachment/doc.png" alt="attachment" />' % (settings.STATIC_URL)
     else:
         img = '<img src="%sdjangobb_forum/img/attachment/unknown.png" alt="attachment" />' % (settings.STATIC_URL)
-    attachment = '%s <a href="%s">%s</a> (%s)' % (img, attach.get_absolute_url(), attach.name, filesizeformat(attach.size))
+    attachment = '%s <a href="%s">%s</a> (%s)' % (
+        img, attach.get_absolute_url(), attach.name, filesizeformat(attach.size))
     return mark_safe(attachment)
 
 
@@ -222,6 +229,7 @@ def gravatar(context, email):
     else:
         return ''
 
+
 @register.simple_tag
 def set_theme_style(user):
     theme_style = ''
@@ -236,6 +244,7 @@ def set_theme_style(user):
         static_url=settings.STATIC_URL,
         theme=selected_theme
     ))
+
 
 # http://stackoverflow.com/a/16609498
 @register.simple_tag

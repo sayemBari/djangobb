@@ -96,3 +96,6 @@ SMILES = ((r'(:|=)\)', EMOTION_SMILE), #:), =)
           (r':cool:', EMOTION_COOL)
          )
 SMILES = get('DJANGOBB_SMILES', SMILES)
+
+HIDE_DJANGOBB_HEADER = False
+HIDE_DJANGOBB_TAGLINE = False

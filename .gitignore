@@ -1,3 +1,4 @@
+__pycache__/
 *.py[co]
 *.egg-info
 *.egg
@@ -9,9 +10,10 @@
 *.json
 *.log
 *~
-local_settings.py
-.env
+djangobb_index/
+env/
 build/
-dist/
 .tox/
 venv/
+migrations/
+!djangobb_forum/migrations/__init__.py
