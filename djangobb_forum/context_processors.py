@@ -9,5 +9,5 @@ from djangobb_forum import settings as djangobb_settings
 def forum_settings(request):
     return {
         'forum_settings': djangobb_settings,
-        'DEBUG': settings.DEBUG,
+        'DEBUG': settings.DEBUG
     }

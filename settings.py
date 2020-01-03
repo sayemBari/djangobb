@@ -13,12 +13,13 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'djangobb',                      # Or path to database file if using sqlite3.
-        'USER': 'postgres',                      # Not used with sqlite3.
-        'PASSWORD': 'postgres',                  # Not used with sqlite3.
-        'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'djangobb',  # Or path to database file if using sqlite3.
+        'USER': 'postgres',  # Not used with sqlite3.
+        'PASSWORD': 'postgres',  # Not used with sqlite3.
+        'HOST': 'localhost',  # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '5432',  # Set to empty string for default. Not used with sqlite3.
     }
 }
 
@@ -83,7 +84,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_ROOT,'project_static'),
+    os.path.join(PROJECT_ROOT, 'project_static'),
 )
 
 # List of finder classes that know how to find static files in
@@ -91,7 +92,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -104,15 +105,14 @@ if not hasattr(globals(), 'SECRET_KEY'):
         try:
             from random import choice
             import string
-            symbols = ''.join((string.ascii_lowercase, string.digits, string.punctuation ))
+
+            symbols = ''.join((string.ascii_lowercase, string.digits, string.punctuation))
             SECRET_KEY = ''.join([choice(symbols) for i in range(50)])
             with open(SECRET_FILE, 'w') as f:
                 f.write(SECRET_KEY)
                 f.close()
         except IOError:
             raise Exception('Please create a %s file with random characters to generate your secret key!' % SECRET_FILE)
-
-
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.cache.UpdateCacheMiddleware',
@@ -131,24 +131,24 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'urls'
 
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(PROJECT_ROOT, 'templates')],
         'OPTIONS': {
-            'context_processors': ['django.contrib.auth.context_processors.auth',
-                                   'django.template.context_processors.debug',
-                                   'django.template.context_processors.i18n',
-                                   'django.template.context_processors.media',
-                                   'django.template.context_processors.static',
-                                   'django.template.context_processors.request',
-                                   'django.contrib.messages.context_processors.messages',
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.request',
+                'django.contrib.messages.context_processors.messages',
 
-                                   'django_messages.context_processors.inbox',
+                'django_messages.context_processors.inbox',
 
-                                   'djangobb_forum.context_processors.forum_settings',
-                                   ],
+                'djangobb_forum.context_processors.forum_settings',
+            ],
             'loaders': [
                 'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
@@ -216,11 +216,11 @@ LOGGING = {
 
 try:
     import mailer
+
     INSTALLED_APPS += ('mailer',)
     EMAIL_BACKEND = "mailer.backend.DbBackend"
 except ImportError:
     pass
-
 
 FORCE_SCRIPT_NAME = ''
 

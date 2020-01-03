@@ -4,7 +4,8 @@
  */
 
 
-function BaseTemplate() {}
+function BaseTemplate() {
+}
 
 BaseTemplate.prototype = {
     hideHeader: function () {
@@ -25,6 +26,10 @@ BaseTemplate.prototype = {
 
 $(function () {
     let baseTemplateInstance = new BaseTemplate();
-    baseTemplateInstance.hideHeader();
-    baseTemplateInstance.hideFooterExtraTags();
+    if (HIDE_DJANGOBB_HEADER) {
+        baseTemplateInstance.hideHeader();
+    }
+    if (HIDE_DJANGOBB_TAGLINE) {
+        baseTemplateInstance.hideFooterExtraTags();
+    }
 });
