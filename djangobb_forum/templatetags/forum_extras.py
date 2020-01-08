@@ -7,7 +7,7 @@ from django import template
 from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturalday
 from django.core.cache import cache
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import smart_text
 from django.utils.html import escape

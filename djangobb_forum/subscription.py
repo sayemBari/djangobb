@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
 
-from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.mail import EmailMultiAlternatives
+from django.urls import reverse
 from django.utils.html import strip_tags
 
 from djangobb_forum import settings as forum_settings
@@ -12,6 +12,8 @@ if "mailer" in settings.INSTALLED_APPS:
     from mailer import send_mail
 else:
     from django.core.mail import send_mail
+
+
     def send_mail(subject, text, from_email, rec_list, html=None):
         """
         Shortcut for sending email.
@@ -21,7 +23,6 @@ else:
         if html:
             msg.attach_alternative(html, "text/html")
         msg.send(fail_silently=True)
-
 
 # TODO: move to txt template
 TOPIC_SUBSCRIPTION_TEXT_TEMPLATE = ("""New reply from %(username)s to topic that you have subscribed on.
@@ -41,13 +42,15 @@ def email_topic_subscribers(post):
                 subject = 'RE: %s' % topic.name
                 to_email = user.email
                 text_content = TOPIC_SUBSCRIPTION_TEXT_TEMPLATE % {
-                        'username': post.user.username,
-                        'message': post_body_text,
-                        'post_url': absolute_url(post.get_absolute_url()),
-                        'unsubscribe_url': absolute_url(reverse('djangobb:forum_delete_subscription', args=[post.topic.id])),
-                    }
-                #html_content = html_version(post)
+                    'username': post.user.username,
+                    'message': post_body_text,
+                    'post_url': absolute_url(post.get_absolute_url()),
+                    'unsubscribe_url': absolute_url(
+                        reverse('djangobb:forum_delete_subscription', args=[post.topic.id])),
+                }
+                # html_content = html_version(post)
                 send_mail(subject, text_content, settings.DEFAULT_FROM_EMAIL, [to_email])
+
 
 def notify_topic_subscribers(post):
     path = forum_settings.NOTIFICATION_HANDLER.split('.')

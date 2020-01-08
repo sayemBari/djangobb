@@ -1,12 +1,13 @@
 #!/usr/bin/env python
+from distutils.cmd import Command
+from distutils.command.build import build as _build
 from setuptools import setup, find_packages
 from setuptools.command.install_lib import install_lib as _install_lib
-from distutils.command.build import build as _build
-from distutils.cmd import Command
+
 from djangobb_forum import get_version
 
 
-class compile_translations(Command):
+class CompileTranslations(Command):
     description = 'compile message catalogs to MO files via django compilemessages'
     user_options = []
 
@@ -31,17 +32,18 @@ class compile_translations(Command):
             os.chdir(curdir)
 
 
-class build(_build):
+class Build(_build):
     sub_commands = [('compile_translations', None)] + _build.sub_commands
 
 
-class install_lib(_install_lib):
+class InstallLib(_install_lib):
     def run(self):
         self.run_command('compile_translations')
         _install_lib.run(self)
 
 
-setup(name='djangobb_forum',
+setup(
+    name='djangobb_forum',
     version=get_version(),
     description='DjangoBB is a quick and simple forum which uses the Django Framework.',
     license='BSD',
@@ -50,10 +52,13 @@ setup(name='djangobb_forum',
     author_email='Maranchuk Sergey <slav0nic0@gmail.com>',
     packages=find_packages(),
     include_package_data=True,
-    setup_requires=['django>=1.8,<2.0'],
+    setup_requires=['django>=1.8,<=2.2'],
     install_requires=open('requirements.txt').readlines(),
     keywords='django forum bb',
     test_suite='runtests.runtests',
-    cmdclass={'build': build, 'install_lib': install_lib,
-        'compile_translations': compile_translations}
+    cmdclass={
+        'build': Build,
+        'install_lib': InstallLib,
+        'compile_translations': CompileTranslations
+    }
 )

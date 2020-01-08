@@ -14,14 +14,14 @@ sitemaps = {
 
 urlpatterns = [
     # Admin
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 
     # Sitemap
     url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps}),
 
     # Apps
-    url(r'^forum/account/', include('allauth.urls')),
-    url(r'^forum/', include('djangobb_forum.urls', namespace='djangobb')),
+    url(r'^forum/account/', include(('allauth.urls', 'allauth.socialaccount'), namespace="allauth_socialaccount")),
+    url(r'^forum/', include(('djangobb_forum.urls', 'djangobb_forum'), namespace='djangobb')),
 ]
 
 # PM Extension

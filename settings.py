@@ -114,7 +114,7 @@ if not hasattr(globals(), 'SECRET_KEY'):
         except IOError:
             raise Exception('Please create a %s file with random characters to generate your secret key!' % SECRET_FILE)
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -152,7 +152,7 @@ TEMPLATES = [
             'loaders': [
                 'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
-                'django.template.loaders.eggs.Loader',
+                'django.template.loaders.base.Loader',
             ]
         },
     },
