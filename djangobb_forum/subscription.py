@@ -13,24 +13,13 @@ if "mailer" in settings.INSTALLED_APPS:
 else:
     from django.core.mail import send_mail
 
-
-    def send_mail(subject, text, from_email, rec_list, html=None):
-        """
-        Shortcut for sending email.
-        """
-
-        msg = EmailMultiAlternatives(subject, text, from_email, rec_list)
-        if html:
-            msg.attach_alternative(html, "text/html")
-        msg.send(fail_silently=True)
-
 # TODO: move to txt template
-TOPIC_SUBSCRIPTION_TEXT_TEMPLATE = ("""New reply from %(username)s to topic that you have subscribed on.
+TOPIC_SUBSCRIPTION_TEXT_TEMPLATE = """New reply from {username} to topic that you have subscribed on.
 ---
-%(message)s
+{message}
 ---
-See topic: %(post_url)s
-Unsubscribe %(unsubscribe_url)s""")
+See topic: {post_url}
+Unsubscribe {unsubscribe_url}"""
 
 
 def email_topic_subscribers(post):
@@ -39,17 +28,20 @@ def email_topic_subscribers(post):
     if post != topic.head:
         for user in topic.subscribers.all():
             if user != post.user:
-                subject = 'RE: %s' % topic.name
+                subject = 'RE: {topic}'.format(topic=topic.name)
                 to_email = user.email
-                text_content = TOPIC_SUBSCRIPTION_TEXT_TEMPLATE % {
-                    'username': post.user.username,
-                    'message': post_body_text,
-                    'post_url': absolute_url(post.get_absolute_url()),
-                    'unsubscribe_url': absolute_url(
-                        reverse('djangobb:forum_delete_subscription', args=[post.topic.id])),
-                }
+                text_content = TOPIC_SUBSCRIPTION_TEXT_TEMPLATE.format(
+                    username=post.user.username, message=post_body_text,
+                    post_url=absolute_url(post.get_absolute_url()),
+                    unsubscribe_url=absolute_url(
+                        reverse('djangobb:forum_delete_subscription', args=[post.topic.id]))
+                )
                 # html_content = html_version(post)
-                send_mail(subject, text_content, settings.DEFAULT_FROM_EMAIL, [to_email])
+                send_mail(
+                    subject=subject, message=text_content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[to_email], fail_silently=True
+                )
 
 
 def notify_topic_subscribers(post):

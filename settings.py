@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os.path
 
+from config import *
+
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 DEBUG = True
@@ -112,9 +114,11 @@ if not hasattr(globals(), 'SECRET_KEY'):
                 f.write(SECRET_KEY)
                 f.close()
         except IOError:
-            raise Exception('Please create a %s file with random characters to generate your secret key!' % SECRET_FILE)
+            raise Exception(
+                'Please create a {secret_file} file with random characters to generate your secret key!'.format(
+                    secret_file=SECRET_FILE))
 
-MIDDLEWARE = (
+MIDDLEWARE_CLASSES = (
     'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -152,13 +156,13 @@ TEMPLATES = [
             'loaders': [
                 'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
-                'django.template.loaders.base.Loader',
+                'django.template.loaders.eggs.Loader',
             ]
         },
     },
 ]
 ALLOWED_HOSTS = ["*"]
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -170,6 +174,13 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django.contrib.humanize',
 
+    'haystack',
+    'django_messages',
+    'nocaptcha_recaptcha'
+]
+INSTALLED_APPS += PROJECT_APPS
+
+INSTALLED_APPS += [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -177,13 +188,7 @@ INSTALLED_APPS = (
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.twitter',
-
-    'haystack',
-    'django_messages',
-    'nocaptcha_recaptcha',
-
-    'djangobb_forum',
-)
+]
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

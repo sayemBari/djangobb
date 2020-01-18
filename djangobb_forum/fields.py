@@ -1,9 +1,10 @@
-from io import BytesIO
+import json
 import random
 from hashlib import sha1
-import json
+from io import BytesIO
 
 from django.db.models import OneToOneField
+
 try:
     from django.db.models.fields.related_descriptors import ReverseOneToOneDescriptor
 except ImportError:
@@ -12,9 +13,7 @@ from django.db import models
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
-from django.forms.utils import ValidationError
 from django.utils import six
-from django.utils.translation import ugettext_lazy as _
 
 
 class AutoReverseOneToOneDescriptor(ReverseOneToOneDescriptor):
@@ -26,7 +25,7 @@ class AutoReverseOneToOneDescriptor(ReverseOneToOneDescriptor):
         except model.DoesNotExist:
             obj = model(**{self.related.field.name: instance})
             obj.save()
-            return (super(AutoReverseOneToOneDescriptor, self).__get__(instance, instance_type))
+            return super(AutoReverseOneToOneDescriptor, self).__get__(instance, instance_type)
 
 
 class AutoOneToOneField(OneToOneField):
@@ -53,7 +52,7 @@ class ExtendedImageField(models.ImageField):
         if data and self.width and self.height:
             content = self.resize_image(data.read(), width=self.width, height=self.height)
             salt = sha1(str(random.random()).encode('utf-8')).hexdigest()[:5]
-            fname =  sha1(salt.encode('utf-8') + settings.SECRET_KEY.encode('utf-8')).hexdigest() + '.png'
+            fname = sha1(salt.encode('utf-8') + settings.SECRET_KEY.encode('utf-8')).hexdigest() + '.png'
             data = SimpleUploadedFile(fname, content, content_type='image/png')
         super(ExtendedImageField, self).save_form_data(instance, data)
 
@@ -74,7 +73,6 @@ class ExtendedImageField(models.ImageField):
             y = int(round((oldh - oldw) / 2.0))
             image = image.crop((0, y, oldw - 1, (y + oldw) - 1))
         image = image.resize((width, height), resample=Image.ANTIALIAS)
-
 
         string = BytesIO()
         image.save(string, format='PNG')

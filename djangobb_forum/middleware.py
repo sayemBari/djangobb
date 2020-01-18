@@ -11,7 +11,7 @@ from djangobb_forum import settings as forum_settings
 class LastLoginMiddleware(object):
     def process_request(self, request):
         if request.user.is_authenticated():
-            cache.set('djangobb_user%d' % request.user.id, True, forum_settings.USER_ONLINE_TIMEOUT)
+            cache.set('djangobb_user{_id}'.format(_id=request.user.id), True, forum_settings.USER_ONLINE_TIMEOUT)
 
 
 class ForumMiddleware(object):

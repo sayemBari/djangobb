@@ -135,7 +135,8 @@ class Topic(models.Model):
     subscribers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='subscriptions',
                                          verbose_name=_('Subscribers'), blank=True)
     post_count = models.IntegerField(_('Post count'), blank=True, default=0)
-    last_post = models.ForeignKey('Post', related_name='last_topic_post', on_delete=models.SET_NULL, default=None, blank=True, null=True)
+    last_post = models.ForeignKey('Post', related_name='last_topic_post', on_delete=models.SET_NULL, default=None,
+                                  blank=True, null=True)
 
     class Meta:
         ordering = ['-updated']
@@ -190,7 +191,7 @@ class Topic(models.Model):
                 tracking.last_read = timezone.now()
                 tracking.save()
             # update topics if exist new post or does't exist in dict
-            if self.last_post_id > tracking.topics.get(str(self.id), 0):
+            if self.last_post and self.last_post.id > tracking.topics.get(str(self.id), 0):
                 tracking.topics[str(self.id)] = self.last_post_id
                 tracking.save()
         else:
@@ -286,7 +287,8 @@ class Reputation(models.Model):
 
     def __str__(self):
         time = timezone.localtime(self.time)
-        return 'T[%d], FU[%d], TU[%d]: %s' % (self.post.id, self.from_user.id, self.to_user.id, str(time))
+        return 'T[{p_id}], FU[{fu_id}], TU[{tu_id}]: {time}'.format(
+            p_id=self.post.id, fu_id=self.from_user.id, tu_id=self.to_user.id, time=str(time))
 
 
 class ProfileManager(models.Manager):
@@ -382,7 +384,7 @@ class Report(models.Model):
         verbose_name_plural = _('Reports')
 
     def __str__(self):
-        return '%s %s' % (self.reported_by, self.zapped)
+        return '{rep_by} {zapped}'.format(rep_by=self.reported_by, zapped=self.zapped)
 
 
 @python_2_unicode_compatible

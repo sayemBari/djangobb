@@ -1,7 +1,9 @@
 # coding: utf-8
 
 import re
-from django.utils.six.moves import html_parser
+
+from django.utils import html_parser
+
 HTMLParser = html_parser.HTMLParser
 try:
     HTMLParseError = html_parser.HTMLParseError
@@ -11,23 +13,21 @@ except AttributeError:
         pass
 
 from postmarkup import render_bbcode
-from json import JSONEncoder
+
 try:
     import markdown
 except ImportError:
     pass
 
 from django.conf import settings
-from django.http import Http404
 from django.utils.translation import check_for_language
 from django.template.defaultfilters import urlize as django_urlize
-from django.core.paginator import Paginator, EmptyPage, InvalidPage
+from django.core.paginator import Paginator, InvalidPage
 from django.contrib.sites.models import Site
 
 from djangobb_forum import settings as forum_settings
 
-
-#compile smiles regexp
+# compile smiles regexp
 _SMILES = [(re.compile(smile_re), path) for smile_re, path in forum_settings.SMILES]
 
 
@@ -57,72 +57,72 @@ def build_form(Form, _request, GET=False, *args, **kwargs):
 
 
 class HTMLFilter(HTMLParser):
-        """
-        Base class for html parsers that produce filtered output.
-        """
+    """
+    Base class for html parsers that produce filtered output.
+    """
 
-        def __init__(self):
-            HTMLParser.__init__(self)
-            self.convert_charrefs = False  # for py3.5
-            self.html = []
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.convert_charrefs = False  # for py3.5
+        self.html = []
 
-        def handle_starttag(self, tag, attrs):
-            self.html.append('<%s%s>' % (tag, self.__html_attrs(attrs)))
+    def handle_starttag(self, tag, attrs):
+        self.html.append('<%s%s>' % (tag, self.__html_attrs(attrs)))
 
-        def handle_data(self, data):
-            self.html.append(data)
+    def handle_data(self, data):
+        self.html.append(data)
 
-        def handle_startendtag(self, tag, attrs):
-            self.html.append('<%s%s/>' % (tag, self.__html_attrs(attrs)))
+    def handle_startendtag(self, tag, attrs):
+        self.html.append('<%s%s/>' % (tag, self.__html_attrs(attrs)))
 
-        def handle_endtag(self, tag):
-            self.html.append('</%s>' % tag)
+    def handle_endtag(self, tag):
+        self.html.append('</%s>' % tag)
 
-        def handle_entityref(self, name):
-            self.html.append('&%s;' % name)
+    def handle_entityref(self, name):
+        self.html.append('&%s;' % name)
 
-        def handle_charref(self, name):
-            self.html.append('&#%s;' % name)
+    def handle_charref(self, name):
+        self.html.append('&#%s;' % name)
 
-        def unescape(self, s):
-            #we don't need unescape data (without this possible XSS-attack)
-            return s
+    def unescape(self, s):
+        # we don't need unescape data (without this possible XSS-attack)
+        return s
 
-        def __html_attrs(self, attrs):
-            _attrs = ''
-            if attrs:
-                _attrs = ' %s' % (' '.join([('%s="%s"' % (k, v)) for k, v in attrs]))
-            return _attrs
+    def __html_attrs(self, attrs):
+        _attrs = ''
+        if attrs:
+            _attrs = ' %s' % (' '.join([('%s="%s"' % (k, v)) for k, v in attrs]))
+        return _attrs
 
-        def feed(self, data):
-            HTMLParser.feed(self, data)
-            self.html = ''.join(self.html)
+    def feed(self, data):
+        HTMLParser.feed(self, data)
+        self.html = ''.join(self.html)
 
 
 class ExcludeTagsHTMLFilter(HTMLFilter):
-        """
-        Class for html parsing with excluding specified tags.
-        """
+    """
+    Class for html parsing with excluding specified tags.
+    """
 
-        def __init__(self, func, tags=('a', 'pre', 'span')):
-            HTMLFilter.__init__(self)
-            self.func = func
-            self.is_ignored = False
-            self.tags = tags
+    def __init__(self, func, tags=('a', 'pre', 'span')):
+        HTMLFilter.__init__(self)
+        self.func = func
+        self.is_ignored = False
+        self.tags = tags
 
-        def handle_starttag(self, tag, attrs):
-            if tag in self.tags:
-                self.is_ignored = True
-            HTMLFilter.handle_starttag(self, tag, attrs)
+    def handle_starttag(self, tag, attrs):
+        if tag in self.tags:
+            self.is_ignored = True
+        HTMLFilter.handle_starttag(self, tag, attrs)
 
-        def handle_data(self, data):
-            if not self.is_ignored:
-                data = self.func(data)
-            HTMLFilter.handle_data(self, data)
+    def handle_data(self, data):
+        if not self.is_ignored:
+            data = self.func(data)
+        HTMLFilter.handle_data(self, data)
 
-        def handle_endtag(self, tag):
-            self.is_ignored = False
-            HTMLFilter.handle_endtag(self, tag)
+    def handle_endtag(self, tag):
+        self.is_ignored = False
+        HTMLFilter.handle_endtag(self, tag)
 
 
 def urlize(html):
@@ -144,10 +144,12 @@ def urlize(html):
         return html
     return urlized_html
 
+
 def _smile_replacer(data):
     for smile, path in _SMILES:
         data = smile.sub(path, data)
     return data
+
 
 def smiles(html):
     """
@@ -227,4 +229,3 @@ def convert_text_to_html(text, markup):
     if forum_settings.NOFOLLOW_LINKS:
         text = add_rel_nofollow(text)
     return text
-

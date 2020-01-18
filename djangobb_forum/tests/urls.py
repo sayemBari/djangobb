@@ -1,5 +1,6 @@
-from django.conf.urls import patterns, include
+from django.conf.urls import include, url
 
-urlpatterns = patterns('',
-    (r'^forum/', include('djangobb_forum.urls', namespace='djangobb')),
-)
+
+urlpatterns = [
+    url(r'^forum/', include(('djangobb_forum.urls', 'djangobb_forum'), namespace='djangobb'))
+]

@@ -18,7 +18,7 @@ class TestForum(TestCase):
         self.client = Client()
         self.client.login(username='djangobb', password='djangobb')
 
-    def test_index_authericated_view(self):
+    def test_index_authenticated_view(self):
         response = self.client.get(reverse('djangobb:index'))
         self.assertEqual(response.status_code, 200)
 
@@ -33,11 +33,10 @@ class TestForum(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_create_topic(self):
-        response = self.client.post(reverse('djangobb:add_topic', kwargs={'forum_id':
-                                                            self.forum.pk}),
-                                                            {'name': 'title',
-                                                            'body': 'topic body'
-                                                            }
+        response = self.client.post(
+            reverse('djangobb:add_topic',
+                    kwargs={'forum_id': self.forum.pk}),
+            {'name': 'title', 'body': 'topic body'}
                                     )
         topic = Topic.objects.filter(forum=self.forum).latest()
         post_url = reverse('djangobb:post',

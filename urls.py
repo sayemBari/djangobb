@@ -20,7 +20,7 @@ urlpatterns = [
     url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps}),
 
     # Apps
-    url(r'^forum/account/', include(('allauth.urls', 'allauth.socialaccount'), namespace="allauth_socialaccount")),
+    url(r'^forum/account/', include('allauth.urls')),
     url(r'^forum/', include(('djangobb_forum.urls', 'djangobb_forum'), namespace='djangobb')),
 ]
 

@@ -52,7 +52,7 @@ setup(
     author_email='Maranchuk Sergey <slav0nic0@gmail.com>',
     packages=find_packages(),
     include_package_data=True,
-    setup_requires=['django>=1.8,<=2.2'],
+    setup_requires=['django>=1.8,<2.2'],
     install_requires=open('requirements.txt').readlines(),
     keywords='django forum bb',
     test_suite='runtests.runtests',
