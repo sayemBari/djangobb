@@ -59,10 +59,9 @@ def link(object, anchor=''):
     """
     Return A tag with link to object.
     """
-
     url = hasattr(object, 'get_absolute_url') and object.get_absolute_url() or None
     anchor = anchor or smart_text(object)
-    return mark_safe('<a href="%s">%s</a>' % (url, escape(anchor)))
+    return mark_safe('<a href="{url}">{text}</a>'.format(url=url, text=anchor))
 
 
 @register.simple_tag
@@ -82,13 +81,12 @@ def has_unreads(topic, user):
     """
     Check if topic has messages which user didn't read.
     """
-    if not user.is_authenticated() or \
-            (user.posttracking.last_read is not None and \
-             user.posttracking.last_read > topic.updated):
+    if not user.is_authenticated() or (user.posttracking.last_read is not None
+                                       and user.posttracking.last_read > topic.updated):
         return False
     else:
         if isinstance(user.posttracking.topics, dict):
-            if topic.last_post_id > user.posttracking.topics.get(str(topic.id), 0):
+            if topic and topic.last_post and topic.last_post_id > user.posttracking.topics.get(str(topic.id), 0):
                 return True
             else:
                 return False
@@ -108,7 +106,7 @@ def forum_unreads(forum, user):
             if user.posttracking.last_read:
                 topics = topics.filter(updated__gte=user.posttracking.last_read)
             for topic in topics:
-                if topic.last_post_id > user.posttracking.topics.get(str(topic.id), 0):
+                if topic.last_post and topic.last_post_id > user.posttracking.topics.get(str(topic.id), 0):
                     return True
         return False
 
@@ -118,7 +116,6 @@ def forum_moderated_by(topic, user):
     """
     Check if user is moderator of topic's forum.
     """
-
     return user.is_superuser or user in topic.forum.moderators.all()
 
 
@@ -127,7 +124,6 @@ def forum_editable_by(post, user):
     """
     Check if the post could be edited by the user.
     """
-
     if user.is_superuser:
         return True
     if post.user == user:
@@ -142,7 +138,6 @@ def forum_posted_by(post, user):
     """
     Check if the post is writed by the user.
     """
-
     return post.user == user
 
 
@@ -151,57 +146,74 @@ def forum_equal_to(obj1, obj2):
     """
     Check if objects are equal.
     """
-
     return obj1 == obj2
 
 
 @register.filter
 def forum_authority(user):
     posts = user.forum_profile.post_count
+    static_url = settings.STATIC_URL
     if posts >= forum_settings.AUTHORITY_STEP_10:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote10.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote10.gif" alt="" />'.format(static_url=static_url))
     elif posts >= forum_settings.AUTHORITY_STEP_9:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote9.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote9.gif" alt="" />'.format(static_url=static_url))
     elif posts >= forum_settings.AUTHORITY_STEP_8:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote8.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote8.gif" alt="" />'.format(static_url=static_url))
     elif posts >= forum_settings.AUTHORITY_STEP_7:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote7.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote7.gif" alt="" />'.format(static_url=static_url))
     elif posts >= forum_settings.AUTHORITY_STEP_6:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote6.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote6.gif" alt="" />'.format(static_url=static_url))
     elif posts >= forum_settings.AUTHORITY_STEP_5:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote5.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote5.gif" alt="" />'.format(static_url=static_url))
     elif posts >= forum_settings.AUTHORITY_STEP_4:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote4.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote4.gif" alt="" />'.format(static_url=static_url))
     elif posts >= forum_settings.AUTHORITY_STEP_3:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote3.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote3.gif" alt="" />'.format(static_url=static_url))
     elif posts >= forum_settings.AUTHORITY_STEP_2:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote2.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote2.gif" alt="" />'.format(static_url=static_url))
     elif posts >= forum_settings.AUTHORITY_STEP_1:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote1.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote1.gif" alt="" />'.format(static_url=static_url))
     else:
-        return mark_safe('<img src="%sdjangobb_forum/img/authority/vote0.gif" alt="" />' % (settings.STATIC_URL))
+        return mark_safe(
+            '<img src="{static_url}djangobb_forum/img/authority/vote0.gif" alt="" />'.format(static_url=static_url))
 
 
 @register.filter
 def online(user):
-    return cache.get('djangobb_user%d' % user.id)
+    return cache.get('djangobb_user{user_id}'.format(user_id=user.id))
 
 
 @register.filter
 def attachment_link(attach):
     from django.template.defaultfilters import filesizeformat
+    static_url = settings.STATIC_URL
     if attach.content_type in ['image/png', 'image/gif', 'image/jpeg']:
-        img = '<img src="%sdjangobb_forum/img/attachment/image.png" alt="attachment" />' % (settings.STATIC_URL)
+        img = '<img src="{static_url}djangobb_forum/img/attachment/image.png" alt="attachment" />'.format(
+            static_url=static_url)
     elif attach.content_type in ['application/x-tar', 'application/zip']:
-        img = '<img src="%sdjangobb_forum/img/attachment/compress.png" alt="attachment" />' % (settings.STATIC_URL)
+        img = '<img src="{static_url}djangobb_forum/img/attachment/compress.png" alt="attachment" />'.format(
+            static_url=static_url)
     elif attach.content_type in ['text/plain']:
-        img = '<img src="%sdjangobb_forum/img/attachment/text.png" alt="attachment" />' % (settings.STATIC_URL)
+        img = '<img src="{static_url}djangobb_forum/img/attachment/text.png" alt="attachment" />'.format(
+            static_url=static_url)
     elif attach.content_type in ['application/msword']:
-        img = '<img src="%sdjangobb_forum/img/attachment/doc.png" alt="attachment" />' % (settings.STATIC_URL)
+        img = '<img src="{static_url}djangobb_forum/img/attachment/doc.png" alt="attachment" />'.format(
+            static_url=static_url)
     else:
-        img = '<img src="%sdjangobb_forum/img/attachment/unknown.png" alt="attachment" />' % (settings.STATIC_URL)
-    attachment = '%s <a href="%s">%s</a> (%s)' % (
-        img, attach.get_absolute_url(), attach.name, filesizeformat(attach.size))
+        img = '<img src="{static_url}djangobb_forum/img/attachment/unknown.png" alt="attachment" />'.format(
+            static_url=static_url)
+    attachment = '{img} <a href="{url}">{name}</a> ({size})'.format(
+        img=img, url=attach.get_absolute_url(), name=attach.name, size=filesizeformat(attach.size))
     return mark_safe(attachment)
 
 
@@ -218,9 +230,9 @@ def gravatar(context, email):
         else:
             is_secure = False
         size = max(forum_settings.AVATAR_WIDTH, forum_settings.AVATAR_HEIGHT)
-        url = 'https://secure.gravatar.com/avatar/%s?' if is_secure \
-            else 'http://www.gravatar.com/avatar/%s?'
-        url = url % hashlib.md5(email.lower().encode('ascii')).hexdigest()
+        url = 'https://secure.gravatar.com/avatar/{hash}?' if is_secure \
+            else 'http://www.gravatar.com/avatar/{hash}?'
+        url = url.format(hash=hashlib.md5(email.lower().encode('ascii')).hexdigest())
         url += urlencode({
             'size': size,
             'default': forum_settings.GRAVATAR_DEFAULT,
@@ -232,18 +244,13 @@ def gravatar(context, email):
 
 @register.simple_tag
 def set_theme_style(user):
-    theme_style = ''
-    selected_theme = ''
     if user.is_authenticated():
         selected_theme = user.forum_profile.theme
-        theme_style = '<link rel="stylesheet" type="text/css" href="%(static_url)sdjangobb_forum/themes/%(theme)s/style.css" />'
+        theme_style = '<link rel="stylesheet" type="text/css" href="{static_url}djangobb_forum/themes/{theme}/style.css" />'
+        return mark_safe(s=theme_style.format(static_url=settings.STATIC_URL, theme=selected_theme))
     else:
-        theme_style = '<link rel="stylesheet" type="text/css" href="%(static_url)sdjangobb_forum/themes/default/style.css" />'
-
-    return mark_safe(theme_style % dict(
-        static_url=settings.STATIC_URL,
-        theme=selected_theme
-    ))
+        theme_style = '<link rel="stylesheet" type="text/css" href="{static_url}djangobb_forum/themes/default/style.css" />'
+        return mark_safe(s=theme_style.format(static_url=settings.STATIC_URL))
 
 
 # http://stackoverflow.com/a/16609498
